@@ -1,4 +1,4 @@
-use std::env;
+use std::{env, net::SocketAddr};
 
 use axum::{response::Redirect, routing::get, Router};
 use tower::ServiceBuilder;
@@ -45,8 +45,18 @@ async fn main() {
         )
         .layer(tower_http::trace::TraceLayer::new_for_http());
 
-    // run it with hyper on localhost:3000
-    axum::Server::bind(&"0.0.0.0:3000".parse().unwrap())
+    let mut addr = "0.0.0.0:3000".parse::<SocketAddr>().unwrap();
+
+    addr.set_port(
+        env::var("PORT")
+            .ok()
+            .map(|v| v.parse().unwrap())
+            .unwrap_or(3000),
+    );
+
+    println!("Listening at http://{}", addr);
+
+    axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await
         .unwrap();
