@@ -1,6 +1,7 @@
 use std::{env, net::SocketAddr};
 
 use axum::{response::Redirect, routing::get, Router};
+use tokio::fs;
 use tower::ServiceBuilder;
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
@@ -19,6 +20,10 @@ async fn main() {
     let projects = projects::Project::load().expect("Error when loading projects.");
     println!("Loaded {} projects.", projects.len());
 
+    let pub_ssh_key = fs::read_to_string("ssh.pub")
+        .await
+        .expect("can't read/find ssh.pub");
+
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::EnvFilter::try_from_default_env()
@@ -32,10 +37,11 @@ async fn main() {
         .nest("/paper", paper::router())
         .nest("/blog", blog::router())
         .nest("/site", site::router(projects))
+        .route("/ssh", get(|| async { pub_ssh_key }))
         .route(
             "/discord",
             get(|| async {
-                Redirect::permanent(&env::var("DISCORD_URL").expect("DISCORD_URL env var not set"))
+                Redirect::temporary(&env::var("DISCORD_URL").expect("DISCORD_URL env var not set"))
             }),
         )
         .layer(
