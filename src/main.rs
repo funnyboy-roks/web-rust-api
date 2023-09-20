@@ -3,7 +3,7 @@ use std::{env, net::SocketAddr};
 use axum::{response::Redirect, routing::get, Router};
 use tokio::fs;
 use tower::ServiceBuilder;
-use tower_http::trace::TraceLayer;
+use tower_http::{services::ServeFile, trace::TraceLayer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 mod blog;
@@ -37,6 +37,7 @@ async fn main() {
         .nest("/paper", paper::router())
         .nest("/blog", blog::router())
         .nest("/site", site::router(projects))
+        .nest_service("/resume.pdf", ServeFile::new("resume.pdf"))
         .route("/ssh", get(|| async { pub_ssh_key }))
         .route(
             "/discord",
