@@ -2,12 +2,11 @@ use crate::models::*;
 use axum::{
     response::Redirect,
     routing::{get, post},
-    Form, Json, Router,
+    Json, Router,
 };
 use projects::*;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
-use strum::VariantNames;
 
 pub fn get_tags(projects: &Vec<Project>) -> BTreeSet<String> {
     projects
@@ -82,9 +81,5 @@ pub fn router(projects: Vec<Project>) -> Router {
         )
         .route("/contact", post(contact_form))
         .route("/projects", get(|| async { Json(projects) }))
-        .route(
-            "/projects/langs",
-            get(|| async { Json(Language::VARIANTS) }),
-        )
         .route("/projects/tags", get(|| async { Json(tags) }))
 }
