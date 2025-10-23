@@ -1,21 +1,5 @@
-use crate::models::*;
-use axum::{
-    response::Redirect,
-    routing::{get, post},
-    Json, Router,
-};
-use projects::*;
+use axum::{routing::post, Json, Router};
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeSet;
-
-pub fn get_tags(projects: &Vec<Project>) -> BTreeSet<String> {
-    projects
-        .iter()
-        .filter(|p| !p.tags.is_empty())
-        .map(|p| p.tags.clone())
-        .flatten()
-        .collect()
-}
 
 #[derive(Debug, Clone, Deserialize)]
 struct ContactForm {
@@ -39,7 +23,7 @@ struct WebhookMessage {
 }
 
 fn escape_code(s: &str) -> String {
-    s.replace("`", "`​")
+    s.replace("`", "`\u{200b}")
 }
 
 async fn contact_form(Json(form): Json<ContactForm>) {
@@ -61,7 +45,7 @@ async fn contact_form(Json(form): Json<ContactForm>) {
 
     let client = reqwest::Client::new();
     let req = client
-        .post(&std::env::var("WEBHOOK_URL").expect("WEBHOOK_URL is not set"))
+        .post(std::env::var("WEBHOOK_URL").expect("WEBHOOK_URL is not set"))
         .json(&msg)
         .send()
         .await;
@@ -72,14 +56,6 @@ async fn contact_form(Json(form): Json<ContactForm>) {
     }
 }
 
-pub fn router(projects: Vec<Project>) -> Router {
-    let tags = get_tags(&projects);
-    Router::new()
-        .route(
-            "/",
-            get(|| async { Redirect::temporary("https://funnyboyroks.com") }),
-        )
-        .route("/contact", post(contact_form))
-        .route("/projects", get(|| async { Json(projects) }))
-        .route("/projects/tags", get(|| async { Json(tags) }))
+pub fn router() -> Router {
+    Router::new().route("/contact", post(contact_form))
 }

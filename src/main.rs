@@ -6,19 +6,12 @@ use tower::ServiceBuilder;
 use tower_http::{services::ServeFile, trace::TraceLayer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-mod blog;
-mod models;
 mod paper;
 mod site;
-
-use models::*;
 
 #[tokio::main]
 async fn main() {
     dotenvy::dotenv().unwrap();
-
-    let projects = projects::Project::load().expect("Error when loading projects.");
-    println!("Loaded {} projects.", projects.len());
 
     let pub_ssh_key = fs::read_to_string("ssh.pub")
         .await
@@ -35,8 +28,7 @@ async fn main() {
     // build our application with a single route
     let app = Router::new()
         .nest("/paper", paper::router())
-        .nest("/blog", blog::router())
-        .nest("/site", site::router(projects))
+        .nest("/site", site::router())
         .nest_service("/resume.pdf", ServeFile::new("resume.pdf"))
         .route("/ssh", get(|| async { pub_ssh_key }))
         .route(

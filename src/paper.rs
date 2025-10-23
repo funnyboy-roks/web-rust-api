@@ -26,13 +26,13 @@ impl FromStr for MCVersion {
 
         let major: u8 = split // Required
             .next()
-            .ok_or_else(|| INVALID_VERSION)?
+            .ok_or(INVALID_VERSION)?
             .parse()
             .map_err(|_| INVALID_VERSION)?;
 
         let minor: u8 = split // Required
             .next()
-            .ok_or_else(|| INVALID_VERSION)?
+            .ok_or(INVALID_VERSION)?
             .parse()
             .map_err(|_| INVALID_VERSION)?;
 
