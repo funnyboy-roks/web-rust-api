@@ -30,9 +30,7 @@ async fn main() {
         .route("/ssh", get(|| async { pub_ssh_key }))
         .route(
             "/discord",
-            get(|| async {
-                Redirect::temporary(&env::var("DISCORD_URL").expect("DISCORD_URL env var not set"))
-            }),
+            get(|| async { Redirect::permanent("https://fbr.dev/discord") }),
         )
         .layer(
             ServiceBuilder::new()
