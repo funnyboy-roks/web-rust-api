@@ -4,6 +4,7 @@ use axum::{response::Redirect, routing::get, Router};
 use tokio::fs;
 use tower::ServiceBuilder;
 use tower_http::{services::ServeFile, trace::TraceLayer};
+use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 mod site;
@@ -51,7 +52,7 @@ async fn main() {
             .unwrap_or(3000),
     );
 
-    println!("Listening at http://{}", addr);
+    info!("Listening at http://{}", addr);
 
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
