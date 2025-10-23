@@ -6,7 +6,6 @@ use tower::ServiceBuilder;
 use tower_http::{services::ServeFile, trace::TraceLayer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-mod paper;
 mod site;
 
 #[tokio::main]
@@ -27,7 +26,6 @@ async fn main() {
 
     // build our application with a single route
     let app = Router::new()
-        .nest("/paper", paper::router())
         .nest("/site", site::router())
         .nest_service("/resume.pdf", ServeFile::new("resume.pdf"))
         .route("/ssh", get(|| async { pub_ssh_key }))
