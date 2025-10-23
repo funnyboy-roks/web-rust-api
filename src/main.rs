@@ -7,8 +7,6 @@ use tower_http::{services::ServeFile, trace::TraceLayer};
 use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-mod site;
-
 #[tokio::main]
 async fn main() {
     dotenvy::dotenv().unwrap();
@@ -19,15 +17,15 @@ async fn main() {
 
     tracing_subscriber::registry()
         .with(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "example_todos=debug,tower_http=debug".into()),
+            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
+                concat!(env!("CARGO_CRATE_NAME"), "=debug,tower_http=debug").into()
+            }),
         )
         .with(tracing_subscriber::fmt::layer())
         .init();
 
     // build our application with a single route
     let app = Router::new()
-        .nest("/site", site::router())
         .nest_service("/resume.pdf", ServeFile::new("resume.pdf"))
         .route("/ssh", get(|| async { pub_ssh_key }))
         .route(
